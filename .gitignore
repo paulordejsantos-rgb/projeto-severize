@@ -1,0 +1,7 @@
+.vercel
+node_modules/
+package.json
+package-lock.json
+compress-images.js
+*.png
+!public/brasao.png

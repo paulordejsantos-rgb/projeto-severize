@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bistrô Designer — Cardápio Digital</title>
+<link rel="icon" type="image/png" href="public/brasao.png">
+<link rel="preload" as="image" href="moqueca-peixe.webp" type="image/webp">
+<link rel="preload" as="image" href="picanha-brasa.webp" type="image/webp">
+<link rel="preload" as="image" href="costela-bafo.webp" type="image/webp">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#000000;min-height:100vh;}
+
+header{background:#000000;color:#C9A84C;padding:18px 16px 14px;text-align:center;position:sticky;top:40px;z-index:100;border-bottom:1px solid #C9A84C;}
+header h1{font-size:22px;font-weight:700;letter-spacing:0.06em;color:#C9A84C;}
+header p{font-size:12px;color:#C9A84C;margin-top:3px;}
+
+nav{display:flex;gap:8px;padding:12px 14px;background:#0d0d0d;border-bottom:1px solid #2a2218;overflow-x:auto;position:sticky;top:102px;z-index:99;}
+nav::-webkit-scrollbar{display:none;}
+.cat-btn{padding:7px 16px;border-radius:20px;border:1px solid #3a3020;background:transparent;color:#C9A84C;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+.cat-btn.ativo{background:#C9A84C;color:#000;border-color:#C9A84C;}
+
+main{padding:14px 12px 130px;}
+.sec-titulo{font-size:11px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:0.08em;margin:14px 0 10px;}
+
+.card{display:flex;background:#111111;border-radius:12px;border:1px solid #2a2218;overflow:hidden;margin-bottom:10px;}
+.card-img{width:120px;min-height:120px;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;overflow:hidden;position:relative;}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block;min-height:120px;}
+.card-info{flex:1;padding:11px 12px 10px;}
+.card-nome{font-size:14px;font-weight:700;color:#C9A84C;margin-bottom:3px;}
+.card-desc{font-size:12px;color:#C9A84C;line-height:1.4;margin-bottom:9px;}
+.card-rodape{display:flex;justify-content:space-between;align-items:center;}
+.card-preco{font-size:15px;font-weight:700;color:#C9A84C;}
+.add-btn{width:32px;height:32px;background:#C9A84C;color:#000;border:none;border-radius:8px;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;}
+.add-btn:active{background:#9a7c32;}
+.add-btn:disabled{opacity:0.4;cursor:not-allowed;pointer-events:none;}
+.img-esgotado{filter:grayscale(100%);}
+.selo-esgotado{position:absolute;top:6px;left:6px;background:#c0392b;color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 7px;border-radius:10px;pointer-events:none;}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.tag{font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid;font-weight:600;letter-spacing:0.03em;}
+.tag-semgluten{border-color:#e8a020;color:#e8a020;}
+.tag-semlactose{border-color:#5ba4cf;color:#5ba4cf;}
+.tag-vegano{border-color:#5cb85c;color:#5cb85c;}
+
+footer{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.97);padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid rgba(201,168,76,0.4);backdrop-filter:blur(10px);}
+.footer-info{display:flex;justify-content:space-between;align-items:baseline;}
+.footer-label{color:#555;font-size:10px;letter-spacing:0.04em;text-transform:uppercase;}
+.resumo{color:#C9A84C;font-size:18px;font-weight:700;line-height:1;}
+.footer-actions{display:flex;gap:6px;flex-wrap:nowrap;}
+.btn-garcom{flex:1;padding:10px 4px;background:rgba(201,168,76,0.1);color:#C9A84C;border:1px solid rgba(201,168,76,0.35);border-radius:13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.01em;transition:all 0.15s;text-align:center;line-height:1.3;}
+.btn-garcom:active{background:rgba(201,168,76,0.22);}
+.btn-pagar{flex:1;padding:10px 4px;background:#c0392b;color:#fff;border:none;border-radius:13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.01em;box-shadow:0 3px 10px rgba(0,0,0,0.25);transition:all 0.15s;text-align:center;line-height:1.3;}
+.btn-pagar:active{transform:scale(0.96);box-shadow:0 1px 5px rgba(0,0,0,0.2);}
+.btn-pedir{flex:1;padding:10px 4px;background:#C9A84C;color:#000;border:none;border-radius:13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.01em;box-shadow:0 3px 10px rgba(0,0,0,0.25);transition:all 0.15s;text-align:center;line-height:1.3;}
+.btn-pedir:active{transform:scale(0.96);box-shadow:0 1px 5px rgba(0,0,0,0.2);}
+.btn-pedir.carregando{opacity:0.72;cursor:not-allowed;pointer-events:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.btn-pedir.carregando::after{content:'';width:12px;height:12px;border:2px solid rgba(0,0,0,0.28);border-top-color:#000;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+body.hc .btn-pedir.carregando::after{border-color:rgba(255,255,255,0.3);border-top-color:#fff;}
+.btn-dividir{flex:1;padding:10px 4px;background:rgba(201,168,76,0.18);color:#C9A84C;border:1.5px solid #C9A84C;border-radius:13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.01em;transition:all 0.15s;text-align:center;line-height:1.3;}
+.btn-dividir:active{background:rgba(201,168,76,0.32);}
+.btn-fechar-conta{flex:1;padding:10px 4px;background:transparent;color:#C9A84C;border:1.5px solid #C9A84C;border-radius:13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.01em;transition:all 0.15s;text-align:center;line-height:1.3;}
+.btn-fechar-conta:active{background:rgba(201,168,76,0.15);}
+.pagar-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;align-items:flex-end;justify-content:center;}
+.pagar-bg.open{display:flex;}
+.fechaconta-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;align-items:flex-end;justify-content:center;}
+.fechaconta-bg.open{display:flex;}
+.fechaconta-panel{background:#111111;border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;border-top:2px solid #C9A84C;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.fechaconta-estrelas{font-size:40px;line-height:1;}
+.fechaconta-titulo{font-size:20px;font-weight:700;color:#C9A84C;letter-spacing:0.02em;}
+.fechaconta-marca{font-size:14px;color:#9a7c32;font-weight:600;letter-spacing:0.04em;}
+.fechaconta-msg{font-size:15px;color:#999;line-height:1.7;}
+.fechaconta-fechar{margin-top:8px;width:100%;padding:13px;border-radius:10px;border:1px solid #2a2218;background:transparent;color:#555;font-size:14px;cursor:pointer;font-family:inherit;}
+
+.dividir-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;align-items:flex-end;justify-content:center;}
+.dividir-bg.open{display:flex;}
+.dividir-panel{background:#111111;border-radius:20px 20px 0 0;padding:22px 20px 34px;width:100%;max-width:480px;border-top:2px solid #C9A84C;}
+.div-puxador{width:40px;height:4px;background:#2a2a2a;border-radius:2px;margin:0 auto 20px;}
+.div-titulo{font-size:14px;font-weight:700;color:#C9A84C;text-align:center;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:18px;}
+.div-total-box{background:#0a0a0a;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:22px;}
+.div-total-lbl{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.1em;}
+.div-total-val{font-size:20px;font-weight:700;color:#C9A84C;margin-top:3px;}
+.div-stepper{display:flex;align-items:center;justify-content:center;gap:28px;margin-bottom:22px;}
+.div-step-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid #C9A84C;background:transparent;color:#C9A84C;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;line-height:1;}
+.div-step-btn:active{background:#1a1500;}
+.div-step-num{min-width:70px;text-align:center;}
+.div-step-val{font-size:42px;font-weight:700;color:#C9A84C;line-height:1;}
+.div-step-lbl{font-size:11px;color:#555;margin-top:4px;}
+.div-resultado{border:1.5px solid #C9A84C;border-radius:14px;padding:20px 16px;text-align:center;margin-bottom:20px;background:rgba(201,168,76,0.04);}
+.div-res-lbl{font-size:10px;color:#9a7c32;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;}
+.div-res-val{font-size:44px;font-weight:700;color:#C9A84C;letter-spacing:-0.01em;}
+.div-res-sub{font-size:12px;color:#444;margin-top:8px;}
+.div-fechar{width:100%;padding:13px;border-radius:10px;border:1px solid #222;background:transparent;color:#555;font-size:14px;cursor:pointer;font-family:inherit;}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:#111111;border-radius:20px 20px 0 0;padding:20px 18px 28px;width:100%;max-width:480px;border-top:1px solid #C9A84C;}
+.modal-puxador{width:40px;height:4px;background:#333;border-radius:2px;margin:0 auto 16px;}
+.modal-img{width:100%;height:160px;border-radius:10px;overflow:hidden;margin-bottom:14px;background:#0d0d0d;}
+.modal-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.modal-nome{font-size:17px;font-weight:700;color:#C9A84C;margin-bottom:4px;}
+.modal-desc{font-size:13px;color:#C9A84C;line-height:1.5;margin-bottom:10px;}
+.modal-preco{font-size:22px;font-weight:700;color:#C9A84C;margin-bottom:14px;}
+.modal-qty{display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:14px;}
+.modal-qty-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid #C9A84C;background:transparent;color:#C9A84C;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;line-height:1;}
+.modal-qty-btn:active{background:#1a1500;}
+.modal-qty-num{font-size:24px;font-weight:700;color:#C9A84C;min-width:36px;text-align:center;}
+.obs-lbl{font-size:12px;color:#C9A84C;margin-bottom:5px;}
+.obs-input{width:100%;padding:10px 12px;border:1px solid #333;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:14px;background:#0d0d0d;color:#C9A84C;}
+.modal-btns{display:flex;gap:10px;}
+.mb-cancel{flex:1;padding:12px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-size:14px;cursor:pointer;font-family:inherit;}
+.mb-add{flex:2;padding:12px;border-radius:10px;border:none;background:#C9A84C;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+.confirmado{display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:14px;}
+.confirmado.vis{display:flex;}
+.check{width:64px;height:64px;border-radius:50%;background:#1a2a10;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.conf-titulo{font-size:18px;font-weight:700;color:#C9A84C;}
+.conf-sub{font-size:14px;color:#C9A84C;line-height:1.6;}
+.conf-status{background:#1a2a10;color:#6ab030;font-size:13px;padding:7px 18px;border-radius:20px;}
+.btn-voltar{margin-top:8px;padding:11px 28px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-size:14px;cursor:pointer;font-family:inherit;}
+
+.prog-wrap{width:100%;margin:4px 0 8px;position:relative;}
+.prog-track{position:absolute;top:14px;left:14px;right:14px;height:3px;background:#2a2218;border-radius:2px;}
+.prog-fill{position:absolute;left:0;top:0;height:100%;background:#C9A84C;border-radius:2px;width:0%;transition:width 0.8s ease;}
+.prog-dots{display:flex;justify-content:space-between;position:relative;z-index:1;}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.prog-dot{width:28px;height:28px;border-radius:50%;background:#111111;border:2px solid #2a2218;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#444;transition:background 0.4s,border-color 0.4s,color 0.4s;}
+.prog-dot.ativo{background:#C9A84C;border-color:#C9A84C;color:#000;}
+.prog-dot.feito{background:#C9A84C;border-color:#C9A84C;color:#000;}
+.prog-label{font-size:10px;color:#555;text-align:center;line-height:1.4;max-width:72px;transition:color 0.4s;}
+.prog-label.ativo{color:#C9A84C;font-weight:600;}
+.prog-label.feito{color:#9a7c32;}
+
+.filtros-row{display:flex;gap:8px;padding:8px 14px;background:#0a0a0a;border-bottom:1px solid #1a1a0d;overflow-x:auto;position:sticky;top:156px;z-index:98;}
+.filtros-row::-webkit-scrollbar{display:none;}
+.filtro-btn{padding:5px 12px;border-radius:20px;border:1px solid #2a2a18;background:transparent;color:#C9A84C;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s;}
+.filtro-btn.ativo{background:#C9A84C;color:#000;border-color:#C9A84C;}
+.modal-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+
+.garcom-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;align-items:flex-end;justify-content:center;}
+.garcom-bg.open{display:flex;}
+.garcom-panel{background:#111111;border-radius:20px 20px 0 0;padding:22px 20px 34px;width:100%;max-width:480px;border-top:2px solid #C9A84C;}
+.garcom-label{font-size:14px;color:#aaa;text-align:center;margin-bottom:14px;}
+
+.acess-bar{display:flex;gap:8px;padding:7px 14px;background:#111111;border-bottom:1px solid #2a2218;position:sticky;top:0;z-index:101;align-items:center;}
+.acess-btn{padding:4px 10px;border-radius:6px;border:1px solid #3a3020;background:transparent;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;letter-spacing:0.03em;}
+.acess-btn:active{background:#1a1500;}
+.acess-btn.ativo{background:#C9A84C;color:#000;border-color:#C9A84C;}
+
+body.hc{background:#fff;}
+body.hc .acess-bar{background:#f0f0f0;border-color:#ccc;}
+body.hc .acess-btn{color:#333;border-color:#999;}
+body.hc .acess-btn.ativo{background:#000;color:#fff;border-color:#000;}
+body.hc header{background:#fff;border-bottom-color:#000;}
+body.hc header h1{color:#000;}
+body.hc header p{color:#333;}
+body.hc nav,body.hc .filtros-row{background:#f0f0f0;border-color:#ddd;}
+body.hc .cat-btn{color:#333;border-color:#aaa;}
+body.hc .cat-btn.ativo{background:#000;color:#fff;border-color:#000;}
+body.hc .filtro-btn{color:#333;border-color:#aaa;}
+body.hc .filtro-btn.ativo{background:#000;color:#fff;border-color:#000;}
+body.hc .sec-titulo{color:#000;}
+body.hc .card{background:#fff;border-color:#ddd;}
+body.hc .card-img{background:#eee;}
+body.hc .card-nome{color:#000;}
+body.hc .card-desc{color:#555;}
+body.hc .card-preco{color:#000;}
+body.hc .add-btn{background:#000;color:#fff;}
+body.hc footer{background:#fff;border-top-color:#000;}
+body.hc .footer-label{color:#666;}
+body.hc .btn-garcom{background:#e8e8e8;color:#000;border-color:#000;}
+body.hc .resumo{color:#000;}
+body.hc .btn-pagar{background:#990000;color:#fff;}
+body.hc .btn-pedir{background:#000;color:#fff;}
+body.hc .btn-dividir{background:#e8d800;color:#000;border-color:#888;}
+body.hc .btn-fechar-conta{color:#000;border-color:#000;}
+body.hc .modal-bg,body.hc .dividir-bg,body.hc .garcom-bg{background:rgba(0,0,0,0.65);}
+body.hc .modal,body.hc .dividir-panel,body.hc .garcom-panel{background:#fff;border-top-color:#000;}
+body.hc .div-puxador,body.hc .modal-puxador{background:#ccc;}
+body.hc .div-titulo{color:#000;}
+body.hc .div-total-box{background:#f0f0f0;}
+body.hc .div-total-val{color:#000;}
+body.hc .div-step-btn{border-color:#000;color:#000;}
+body.hc .div-resultado{border-color:#000;background:transparent;}
+body.hc .div-res-val{color:#000;}
+body.hc .div-res-lbl{color:#333;}
+body.hc .div-res-sub{color:#555;}
+body.hc .div-fechar{color:#333;border-color:#ccc;}
+body.hc .modal-nome{color:#000;}
+body.hc .modal-desc{color:#555;}
+body.hc .modal-preco{color:#000;}
+body.hc .obs-lbl{color:#333;}
+body.hc .obs-input{background:#f5f5f5;color:#000;border-color:#ccc;}
+body.hc .mb-cancel{color:#333;border-color:#ccc;}
+body.hc .mb-add{background:#000;color:#fff;}
+body.hc .modal-qty-btn{border-color:#000;color:#000;}
+body.hc .modal-qty-num{color:#000;}
+body.hc .garcom-label{color:#333;}
+body.hc .conf-titulo{color:#000;}
+body.hc .conf-sub{color:#444;}
+body.hc .btn-voltar{color:#333;border-color:#ccc;}
+body.hc .prog-track{background:#ddd;}
+body.hc .prog-fill{background:#000;}
+body.hc .prog-dot{background:#eee;border-color:#ccc;color:#666;}
+body.hc .prog-dot.ativo,body.hc .prog-dot.feito{background:#000;border-color:#000;color:#fff;}
+body.hc .prog-label{color:#666;}
+body.hc .prog-label.ativo,body.hc .prog-label.feito{color:#000;}
+body.hc .notif{background:#000;color:#fff;}
+body.hc .tag-semgluten{border-color:#b06000;color:#b06000;}
+body.hc .tag-semlactose{border-color:#1a6aaa;color:#1a6aaa;}
+body.hc .tag-vegano{border-color:#2a7a2a;color:#2a7a2a;}
+
+body.font-lg .card-nome{font-size:17px;}
+body.font-lg .card-desc{font-size:14px;}
+body.font-lg .card-preco{font-size:17px;}
+body.font-lg .sec-titulo{font-size:13px;}
+body.font-lg .cat-btn{font-size:15px;}
+body.font-lg .filtro-btn{font-size:14px;}
+body.font-lg .modal-nome{font-size:20px;}
+body.font-lg .modal-desc{font-size:15px;}
+body.font-lg .modal-preco{font-size:25px;}
+body.font-sm .card-nome{font-size:12px;}
+body.font-sm .card-desc{font-size:10px;}
+body.font-sm .card-preco{font-size:13px;}
+body.font-sm .sec-titulo{font-size:10px;}
+body.font-sm .cat-btn{font-size:11px;}
+body.font-sm .filtro-btn{font-size:10px;}
+body.font-sm .modal-nome{font-size:15px;}
+body.font-sm .modal-desc{font-size:11px;}
+body.font-sm .modal-preco{font-size:19px;}
+
+.notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#C9A84C;color:#000;font-size:13px;font-weight:700;padding:9px 20px;border-radius:20px;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;z-index:300;}
+.notif.show{opacity:1;}
+
+.faq{background:#0a0a0a;border-top:1px solid #C9A84C;padding:32px 16px 180px;}
+.faq-titulo{font-size:13px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px;text-align:center;}
+.faq-item{border:1px solid #2a2010;border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.faq-item summary{list-style:none;padding:15px 16px;cursor:pointer;font-size:14px;font-weight:700;color:#C9A84C;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.faq-item summary::-webkit-details-marker{display:none;}
+.faq-item summary::after{content:'＋';font-size:18px;flex-shrink:0;transition:transform 0.25s;color:#C9A84C;}
+.faq-item[open] summary::after{transform:rotate(45deg);}
+.faq-item[open] summary{border-bottom:1px solid #2a2010;}
+.faq-resp{padding:14px 16px;font-size:13px;color:#C9A84C;line-height:1.6;background:#0d0d0d;}
+@media(min-width:768px){
+  .faq{padding:40px 24px 180px;}
+  .faq-inner{max-width:960px;margin:0 auto;}
+  .faq-item summary{font-size:15px;}
+  .faq-resp{font-size:14px;}
+}
+@media(min-width:768px){
+  #app-main{display:flex;justify-content:center;}
+  main{width:100%;max-width:960px;padding:14px 24px 155px;}
+  #lista{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start;}
+  .sec-titulo{grid-column:1/-1;}
+  .card{flex-direction:column;margin-bottom:0;}
+  .card-img{width:100%;min-height:unset;flex-shrink:unset;}
+  .card-img img{width:100%;height:auto;aspect-ratio:4/3;object-fit:contain;min-height:unset;}
+  .card-info{padding:16px 18px 14px;}
+  .card-nome{font-size:16px;margin-bottom:6px;}
+  .card-desc{font-size:13px;margin-bottom:12px;}
+  .card-preco{font-size:18px;}
+  .add-btn{width:38px;height:38px;font-size:24px;}
+}
+
+.scroll-fabs{position:fixed;right:14px;bottom:160px;z-index:150;display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transition:opacity 0.25s,transform 0.25s;transform:translateX(20px);}
+.scroll-fabs.vis{opacity:1;pointer-events:auto;transform:translateX(0);}
+.scroll-fab-btn{width:44px;height:44px;border-radius:50%;background:#C9A84C;color:#000;border:none;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.5);transition:background 0.15s,transform 0.1s;}
+.scroll-fab-btn:active{background:#9a7c32;transform:scale(0.93);}
+
+/* ── Feedback Pós-Pedido ── */
+.fb-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;align-items:flex-end;justify-content:center;}
+.fb-bg.open{display:flex;}
+.fb-panel{background:#111111;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;border-top:2px solid #C9A84C;text-align:center;}
+.fb-puxador{width:40px;height:4px;background:#2a2a2a;border-radius:2px;margin:0 auto 18px;}
+.fb-titulo{font-size:16px;font-weight:700;color:#C9A84C;letter-spacing:0.04em;margin-bottom:4px;}
+.fb-sub{font-size:12px;color:#555;margin-bottom:20px;}
+.fb-stars{display:flex;justify-content:center;gap:12px;margin-bottom:20px;}
+.fb-star{font-size:36px;cursor:pointer;color:#C9A84C;opacity:0.25;transition:opacity 0.15s,transform 0.1s;user-select:none;}
+.fb-star.sel{opacity:1;}
+.fb-star:active{transform:scale(1.25);}
+.fb-textarea{width:100%;padding:10px 12px;border:1px solid #333;border-radius:10px;font-size:13px;font-family:inherit;background:#0d0d0d;color:#C9A84C;resize:none;height:76px;margin-bottom:16px;}
+.fb-textarea::placeholder{color:#444;}
+.fb-btns{display:flex;gap:10px;}
+.fb-skip{flex:1;padding:12px;border-radius:10px;border:1px solid #333;background:transparent;color:#666;font-size:14px;cursor:pointer;font-family:inherit;}
+.fb-enviar{flex:2;padding:12px;border-radius:10px;border:none;background:#C9A84C;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.fb-enviar:disabled{opacity:0.35;cursor:not-allowed;}
+body.hc .fb-panel{background:#fff;border-top-color:#000;}
+body.hc .fb-titulo{color:#000;}
+body.hc .fb-star{color:#000;}
+body.hc .fb-textarea{background:#fff;color:#000;border-color:#999;}
+body.hc .fb-enviar{background:#000;color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="acess-bar">
+  <button class="acess-btn" onclick="alterarFonte(-1)">A−</button>
+  <button class="acess-btn" onclick="alterarFonte(1)">A+</button>
+  <button class="acess-btn" id="btn-hc" onclick="alternarContraste()">◐ Alto Contraste</button>
+  <button class="acess-btn" id="btn-narr" onclick="toggleNarracao()">🔇 Narração</button>
+</div>
+
+<header>
+  <h1>Bistrô Designer</h1>
+  <p id="mesa-label">Bem-vindo! Faça seu pedido</p>
+</header>
+
+<nav id="nav-cats"></nav>
+<div class="filtros-row">
+  <button class="filtro-btn" id="f-semgluten" onclick="toggleFiltro('semgluten')">🌾 Sem Glúten</button>
+  <button class="filtro-btn" id="f-semlactose" onclick="toggleFiltro('semlactose')">🥛 Sem Lactose</button>
+  <button class="filtro-btn" id="f-vegano" onclick="toggleFiltro('vegano')">🌿 Vegano</button>
+</div>
+
+<div id="app-main">
+  <main id="lista"></main>
+</div>
+
+<section class="faq">
+  <div class="faq-inner">
+    <div class="faq-titulo">Perguntas Frequentes</div>
+    <details class="faq-item">
+      <summary>Como faço meu pedido?</summary>
+      <div class="faq-resp">Escolha os itens do cardápio, ajuste a quantidade e clique em Enviar Pedido. É simples e rápido!</div>
+    </details>
+    <details class="faq-item">
+      <summary>Posso pagar na mesa?</summary>
+      <div class="faq-resp">Sim! Clique em Dividir Conta para dividir entre os participantes ou Enviar Pedido para pagar de uma vez.</div>
+    </details>
+    <details class="faq-item">
+      <summary>Tem opções sem glúten?</summary>
+      <div class="faq-resp">Sim! Use o filtro Sem Glúten no topo do cardápio para ver apenas os pratos disponíveis para você.</div>
+    </details>
+    <details class="faq-item">
+      <summary>Posso chamar o garçom pelo cardápio?</summary>
+      <div class="faq-resp">Sim! Clique no botão Chamar Garçom a qualquer momento e informe o número da sua mesa.</div>
+    </details>
+    <details class="faq-item">
+      <summary>O cardápio tem opções veganas?</summary>
+      <div class="faq-resp">Sim! Use o filtro Vegano no topo do cardápio para ver as opções disponíveis.</div>
+    </details>
+    <details class="faq-item">
+      <summary>O cardápio tem recursos de acessibilidade?</summary>
+      <div class="faq-resp">Sim! Use os botões A- e A+ para ajustar o tamanho da fonte e o botão Alto Contraste para melhorar a visualização.</div>
+    </details>
+    <details class="faq-item">
+      <summary>O cardápio tem narração por voz?</summary>
+      <div class="faq-resp">Sim! Clique no botão Narração no topo da página. Ao clicar em qualquer prato, o sistema lê automaticamente o nome, descrição e preço em voz alta.</div>
+    </details>
+  </div>
+</section>
+
+<div class="confirmado" id="confirmado">
+  <div class="check">✓</div>
+  <div class="conf-titulo">Pedido enviado!</div>
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-dots">
+      <div class="prog-step">
+        <div class="prog-dot" id="prog-dot-0">1</div>
+        <div class="prog-label" id="prog-lbl-0">Pedido<br>Recebido</div>
+      </div>
+      <div class="prog-step">
+        <div class="prog-dot" id="prog-dot-1">2</div>
+        <div class="prog-label" id="prog-lbl-1">Na<br>Cozinha</div>
+      </div>
+      <div class="prog-step">
+        <div class="prog-dot" id="prog-dot-2">3</div>
+        <div class="prog-label" id="prog-lbl-2">A Caminho<br>da Mesa</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn-voltar" onclick="voltarMenu()">Adicionar mais itens</button>
+</div>
+
+<footer>
+  <div class="footer-info">
+    <span class="footer-label">Total do pedido</span>
+    <span class="resumo" id="resumo">R$ 0,00</span>
+  </div>
+  <div class="footer-actions">
+    <button class="btn-garcom" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
+    <button class="btn-pagar" onclick="pagarConta()">💰 Pagar Conta</button>
+    <button class="btn-dividir" onclick="abrirDividir()">✂ Dividir Conta</button>
+    <button class="btn-fechar-conta" onclick="fecharConta()">🏁 Fechar Conta</button>
+    <button class="btn-pedir" onclick="enviarPedido()">Enviar Pedido</button>
+  </div>
+</footer>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-puxador"></div>
+    <div class="modal-img"><img id="m-img" src="" alt="" loading="lazy" decoding="async"></div>
+    <div class="modal-nome" id="m-nome"></div>
+    <div class="modal-desc" id="m-desc"></div>
+    <div class="modal-tags" id="m-tags"></div>
+    <div class="modal-preco" id="m-preco"></div>
+    <div class="modal-qty">
+      <button class="modal-qty-btn" onclick="alterarQtdModal(-1)">−</button>
+      <span class="modal-qty-num" id="m-qty">1</span>
+      <button class="modal-qty-btn" onclick="alterarQtdModal(1)">+</button>
+    </div>
+    <div class="obs-lbl">Observação (opcional)</div>
+    <input class="obs-input" id="m-obs" type="text" placeholder="Ex: sem coentro, carne ao ponto...">
+    <div class="modal-btns">
+      <button class="mb-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="mb-add" onclick="confirmarAdicao()">Adicionar ao pedido</button>
+    </div>
+  </div>
+</div>
+
+<div class="dividir-bg" id="dividir-bg" onclick="fecharDividir()">
+  <div class="dividir-panel" onclick="event.stopPropagation()">
+    <div class="div-puxador"></div>
+    <div class="div-titulo">✂ Dividir Conta</div>
+    <div class="div-total-box">
+      <div class="div-total-lbl">Total do pedido</div>
+      <div class="div-total-val" id="div-total">R$ 0,00</div>
+    </div>
+    <div class="div-stepper">
+      <button class="div-step-btn" onclick="alterarPessoas(-1)">−</button>
+      <div class="div-step-num">
+        <div class="div-step-val" id="div-num">2</div>
+        <div class="div-step-lbl">pessoas</div>
+      </div>
+      <button class="div-step-btn" onclick="alterarPessoas(1)">+</button>
+    </div>
+    <div class="div-resultado">
+      <div class="div-res-lbl">Cada pessoa paga</div>
+      <div class="div-res-val" id="div-por-pessoa">R$ 0,00</div>
+      <div class="div-res-sub" id="div-res-sub">de 2 pessoas</div>
+    </div>
+    <button class="div-fechar" onclick="fecharDividir()">Fechar</button>
+  </div>
+</div>
+
+<div class="garcom-bg" id="garcom-bg" onclick="fecharGarcom()">
+  <div class="garcom-panel" onclick="event.stopPropagation()">
+    <div class="div-puxador"></div>
+    <div class="div-titulo">🔔 Chamar Garçom</div>
+    <div class="garcom-label">Qual é o número da sua mesa?</div>
+    <input class="obs-input" id="garcom-mesa" type="number" min="1" inputmode="numeric" placeholder="Ex: 5">
+    <div class="modal-btns">
+      <button class="mb-cancel" onclick="fecharGarcom()">Cancelar</button>
+      <button class="mb-add" onclick="confirmarGarcom()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<div class="pagar-bg" id="pagar-bg" onclick="fecharPagar()">
+  <div class="dividir-panel" onclick="event.stopPropagation()">
+    <div class="div-puxador"></div>
+    <div class="div-titulo">💰 Pagar Conta</div>
+    <div class="div-total-box">
+      <div class="div-total-lbl">Total do pedido</div>
+      <div class="div-total-val" id="pagar-total">R$ 0,00</div>
+    </div>
+    <div style="text-align:center;color:#9a7c32;font-size:14px;line-height:1.7;margin-bottom:20px;">Chame o garçom para<br>realizar o pagamento.</div>
+    <button class="div-fechar" onclick="fecharPagar()">Fechar</button>
+  </div>
+</div>
+
+<div class="fechaconta-bg" id="fechaconta-bg" onclick="fecharFechaConta()">
+  <div class="fechaconta-panel" onclick="event.stopPropagation()">
+    <div class="div-puxador"></div>
+    <div class="fechaconta-estrelas">✨</div>
+    <div class="fechaconta-titulo">Obrigado pela sua visita!</div>
+    <div class="fechaconta-marca">🍽️ Bistrô Designer</div>
+    <div class="fechaconta-msg">Foi um prazer servir você.<br>Esperamos vê-lo em breve!</div>
+    <button class="fechaconta-fechar" onclick="fecharFechaConta()">Fechar</button>
+  </div>
+</div>
+
+<div class="fb-bg" id="fb-bg">
+  <div class="fb-panel">
+    <div class="fb-puxador"></div>
+    <div class="fb-titulo">Como foi sua experiência?</div>
+    <div class="fb-sub">Sua opinião nos ajuda a melhorar</div>
+    <div class="fb-stars">
+      <span class="fb-star" onclick="selecionarEstrela(1)">★</span>
+      <span class="fb-star" onclick="selecionarEstrela(2)">★</span>
+      <span class="fb-star" onclick="selecionarEstrela(3)">★</span>
+      <span class="fb-star" onclick="selecionarEstrela(4)">★</span>
+      <span class="fb-star" onclick="selecionarEstrela(5)">★</span>
+    </div>
+    <textarea class="fb-textarea" id="fb-comentario" placeholder="Comentário opcional..."></textarea>
+    <div class="fb-btns">
+      <button class="fb-skip" onclick="pularFeedback()">Pular</button>
+      <button class="fb-enviar" id="fb-enviar-btn" onclick="enviarFeedback()" disabled>Enviar Avaliação</button>
+    </div>
+  </div>
+</div>
+
+<script src="config-cardapio.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const mesa = params.get('mesa');
+if(mesa) document.getElementById('mesa-label').textContent = 'Mesa ' + mesa;
+
+const cardapio = [
+  {id:1,cat:'destaques',emoji:'🐟',img:'moqueca-peixe.webp',nome:'Moqueca de peixe',desc:'Peixe fresco ao leite de coco, tomate e coentro. Acompanha arroz e pirão.',preco:94.90,tags:['semgluten','semlactose']},
+  {id:2,cat:'destaques',emoji:'🥩',img:'picanha-brasa.webp',nome:'Picanha na brasa',desc:'450g grelhada na brasa. Arroz, farofa e vinagrete.',preco:109.90,tags:['semgluten','semlactose']},
+  {id:3,cat:'destaques',emoji:'🍖',img:'costela-bafo.webp',nome:'Costela no bafo',desc:'Cozida lentamente por 8h. Macia e suculenta.',preco:129.90,tags:['semgluten','semlactose']},
+  {id:4,cat:'pratos',emoji:'🫘',img:'feijoada-completa.webp',nome:'Feijoada completa',desc:'Feijão preto, carnes variadas, couve, farofa e laranja.',preco:89.90,tags:['semgluten','semlactose']},
+  {id:5,cat:'pratos',emoji:'🍗',img:'frango-caipira.webp',nome:'Frango caipira',desc:'Frango caipira ao molho de alho e ervas. Com mandioca cozida.',preco:74.90,tags:['semgluten','semlactose']},
+  {id:6,cat:'pratos',emoji:'🦐',img:'camarao-alho-oleo.webp',nome:'Camarão alho e óleo',desc:'Camarão médio, alho frito, azeite e salsinha. Com arroz branco.',preco:98.90,tags:['semgluten','semlactose']},
+  {id:7,cat:'entradas',emoji:'🍵',img:'caldo-mocoto.webp',nome:'Caldo de mocotó',desc:'Caldo tradicional com pé bovino, temperado na hora.',preco:22.90,tags:['semgluten','semlactose']},
+  {id:8,cat:'entradas',emoji:'🟡',img:'bolinho-mandioca.webp',nome:'Bolinho de mandioca',desc:'6 unidades recheadas com carne de sol e queijo coalho.',preco:32.00,tags:['semgluten']},
+  {id:9,cat:'entradas',emoji:'🥣',img:'caldo-verde.webp',nome:'Caldo verde',desc:'Cremoso com linguiça e couve, estilo mineiro.',preco:19.90,tags:['semgluten','semlactose']},
+  {id:10,cat:'bebidas',emoji:'🍹',img:'suco-acerola.webp',nome:'Suco de acerola',desc:'Natural, feito na hora. 400ml.',preco:14.00,tags:['vegano','semgluten','semlactose']},
+  {id:11,cat:'bebidas',emoji:'🍺',img:'cerveja-artesanal.webp',nome:'Cerveja artesanal',desc:'Long neck 355ml. Pergunte as opções disponíveis.',preco:19.00,tags:[]},
+  {id:12,cat:'bebidas',emoji:'💧',img:'agua-mineral.webp',nome:'Água mineral',desc:'Com ou sem gás. 500ml com gelo e limão frescos.',preco:7.00,tags:['vegano','semgluten','semlactose']},
+  {id:13,cat:'sobremesas',emoji:'🍮',img:'pudim-leite.webp',nome:'Pudim de leite',desc:'Receita da casa, com calda de caramelo.',preco:18.90,tags:[]},
+  {id:14,cat:'sobremesas',emoji:'🫐',img:'mousse-maracuja.webp',nome:'Mousse de maracujá',desc:'Cremoso, com calda de frutas vermelhas.',preco:22.00,tags:['semgluten']},
+  {id:15,cat:'sobremesas',emoji:'🍨',img:'sorvete-duas-bolas.webp',nome:'Sorvete duas bolas',desc:'De baunilha premium, com calda de caramelo quente.',preco:10.00,tags:['semgluten']},
+];
+
+const cats = [
+  {id:'destaques',label:'Sugestão do Chefe para o Dia'},
+  {id:'entradas',label:'Entradas'},
+  {id:'pratos',label:'Pratos'},
+  {id:'bebidas',label:'Bebidas'},
+  {id:'sobremesas',label:'Sobremesas'},
+];
+
+let catAtiva = 'destaques';
+let carrinho = {};
+let itemSel = null;
+let numPessoas = 2;
+let modalQty = 1;
+let filtroAtivo = null;
+let fontState = 0;
+let narracaoAtiva = false;
+
+function toggleNarracao(){
+  narracaoAtiva = !narracaoAtiva;
+  const btn = document.getElementById('btn-narr');
+  btn.textContent = narracaoAtiva ? '🔊 Narração' : '🔇 Narração';
+  btn.classList.toggle('ativo', narracaoAtiva);
+  if(!narracaoAtiva) speechSynthesis.cancel();
+}
+
+function narrar(texto){
+  if(!narracaoAtiva || !window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(texto);
+  u.lang = 'pt-BR';
+  u.rate = 0.92;
+  u.pitch = 1;
+  speechSynthesis.speak(u);
+}
+
+function alterarFonte(delta){
+  fontState = Math.max(-1, Math.min(1, fontState + delta));
+  document.body.classList.remove('font-lg','font-sm');
+  if(fontState===1) document.body.classList.add('font-lg');
+  if(fontState===-1) document.body.classList.add('font-sm');
+}
+
+function alternarContraste(){
+  document.body.classList.toggle('hc');
+  document.getElementById('btn-hc').classList.toggle('ativo');
+}
+const TAG_LABELS = {semgluten:'Sem Glúten',semlactose:'Sem Lactose',vegano:'Vegano'};
+const TAG_CLS = {semgluten:'tag-semgluten',semlactose:'tag-semlactose',vegano:'tag-vegano'};
+
+function fmt(v){return 'R$ '+v.toFixed(2).replace('.',',');}
+function getTotal(){return Object.values(carrinho).reduce((s,i)=>s+i.preco*i.qty,0);}
+
+function renderNav(){
+  document.getElementById('nav-cats').innerHTML = cats.map(c=>
+    `<button class="cat-btn${c.id===catAtiva?' ativo':''}" onclick="mudarCat('${c.id}')">${c.label}</button>`
+  ).join('');
+}
+
+function mudarCat(id){catAtiva=id;filtroAtivo=null;renderFiltros();renderNav();renderLista();}
+
+function toggleFiltro(f){
+  filtroAtivo = filtroAtivo===f ? null : f;
+  renderFiltros();
+  renderLista();
+}
+
+function renderFiltros(){
+  ['semgluten','semlactose','vegano'].forEach(f=>{
+    const btn = document.getElementById('f-'+f);
+    if(btn) btn.className='filtro-btn'+(filtroAtivo===f?' ativo':'');
+  });
+}
+
+function renderLista(){
+  let itens, titulo;
+  if(filtroAtivo){
+    itens = cardapio.filter(i=>i.tags && i.tags.includes(filtroAtivo));
+    titulo = TAG_LABELS[filtroAtivo];
+  } else {
+    itens = cardapio.filter(i=>i.cat===catAtiva);
+    titulo = cats.find(c=>c.id===catAtiva)?.label||'';
+  }
+  document.getElementById('lista').innerHTML =
+    `<div class="sec-titulo">${titulo}</div>` +
+    (itens.length ? itens.map(i=>{const disp=!(window.DISPONIBILIDADE&&window.DISPONIBILIDADE[i.id]===false);return`
+      <div class="card" onclick="abrirItem(${i.id})">
+        <div class="card-img">
+          <img src="${i.img}" alt="${i.nome}" loading="eager" decoding="async" ${disp?'':'class="img-esgotado"'} onerror="this.parentElement.innerHTML='<span style=font-size:30px>${i.emoji}</span>'">
+          ${disp?'':'<span class="selo-esgotado">Esgotado</span>'}
+        </div>
+        <div class="card-info">
+          <div class="card-nome">${i.nome}</div>
+          <div class="card-desc">${i.desc}</div>
+          ${(i.tags&&i.tags.length)?`<div class="card-tags">${i.tags.map(t=>`<span class="tag ${TAG_CLS[t]}">${TAG_LABELS[t]}</span>`).join('')}</div>`:''}
+          <div class="card-rodape">
+            <span class="card-preco">${fmt(i.preco)}</span>
+            <button class="add-btn" onclick="event.stopPropagation();abrirItem(${i.id})" ${disp?'':'disabled'}>+</button>
+          </div>
+        </div>
+      </div>`;}).join('') : '<div style="color:#555;font-size:14px;padding:30px;text-align:center;">Nenhum item encontrado</div>');
+}
+
+function abrirItem(id){
+  itemSel = cardapio.find(i=>i.id===id);
+  if(!itemSel)return;
+  modalQty = 1;
+  document.getElementById('m-qty').textContent = 1;
+  document.getElementById('m-img').src = itemSel.img;
+  document.getElementById('m-img').alt = itemSel.nome;
+  document.getElementById('m-nome').textContent = itemSel.nome;
+  document.getElementById('m-desc').textContent = itemSel.desc;
+  document.getElementById('m-tags').innerHTML = (itemSel.tags&&itemSel.tags.length) ?
+    itemSel.tags.map(t=>`<span class="tag ${TAG_CLS[t]}">${TAG_LABELS[t]}</span>`).join('') : '';
+  document.getElementById('m-preco').textContent = fmt(itemSel.preco);
+  document.getElementById('m-obs').value = '';
+  document.getElementById('modal').classList.add('open');
+  narrar(`${itemSel.nome}. ${itemSel.desc}. Preço: ${fmt(itemSel.preco)}.`);
+}
+
+function alterarQtdModal(delta){
+  modalQty = Math.max(1, modalQty + delta);
+  document.getElementById('m-qty').textContent = modalQty;
+}
+
+function fecharModal(){document.getElementById('modal').classList.remove('open');}
+
+function confirmarAdicao(){
+  if(!itemSel)return;
+  const id = itemSel.id;
+  const obs = document.getElementById('m-obs').value.trim();
+  if(!carrinho[id]) carrinho[id]={...itemSel,qty:0,obs:''};
+  carrinho[id].qty += modalQty;
+  if(obs) carrinho[id].obs = obs;
+  fecharModal();
+  renderCarrinho();
+  mostrarNotif(itemSel.nome+' adicionado!');
+}
+
+function renderCarrinho(){
+  document.getElementById('resumo').textContent = fmt(getTotal());
+}
+
+function abrirDividir(){
+  if(getTotal()===0){mostrarNotif('Adicione itens ao pedido primeiro!');return;}
+  numPessoas=2;
+  atualizarDividir();
+  document.getElementById('dividir-bg').classList.add('open');
+}
+
+function fecharDividir(){
+  document.getElementById('dividir-bg').classList.remove('open');
+}
+
+function alterarPessoas(delta){
+  numPessoas=Math.max(1,numPessoas+delta);
+  atualizarDividir();
+}
+
+function atualizarDividir(){
+  const total=getTotal();
+  document.getElementById('div-total').textContent=fmt(total);
+  document.getElementById('div-num').textContent=numPessoas;
+  document.getElementById('div-por-pessoa').textContent=fmt(total/numPessoas);
+  document.getElementById('div-res-sub').textContent=
+    numPessoas===1?'pagamento integral':'de '+numPessoas+' pessoas';
+}
+
+function mostrarNotif(msg){
+  const n=document.getElementById('notif');
+  n.textContent=msg;n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),2500);
+}
+
+function chamarGarcom(){
+  document.getElementById('garcom-mesa').value = mesa || '';
+  document.getElementById('garcom-bg').classList.add('open');
+}
+
+function fecharGarcom(){
+  document.getElementById('garcom-bg').classList.remove('open');
+}
+
+function confirmarGarcom(){
+  const num = document.getElementById('garcom-mesa').value.trim();
+  if(!num){mostrarNotif('Informe o número da mesa!');return;}
+  fecharGarcom();
+  mostrarNotif('Garçom chamado para a mesa '+num+'!');
+}
+
+let progStep = 0;
+let progTimer = null;
+const PROG_FILLS = ['0%','50%','100%'];
+
+function iniciarProgresso(){
+  progStep = 0;
+  if(progTimer) clearInterval(progTimer);
+  atualizarProgresso();
+  progTimer = setInterval(()=>{
+    if(progStep < 2){ progStep++; atualizarProgresso(); }
+    else { clearInterval(progTimer); progTimer = null; }
+  }, 30000);
+}
+
+function atualizarProgresso(){
+  document.getElementById('prog-fill').style.width = PROG_FILLS[progStep];
+  [0,1,2].forEach(i=>{
+    const cls = i < progStep ? 'feito' : i === progStep ? 'ativo' : '';
+    document.getElementById('prog-dot-'+i).className = 'prog-dot'+(cls?' '+cls:'');
+    document.getElementById('prog-lbl-'+i).className = 'prog-label'+(cls?' '+cls:'');
+  });
+}
+
+function enviarPedido(){
+  if(!Object.keys(carrinho).length){mostrarNotif('Adicione itens primeiro!');return;}
+  const btn = document.querySelector('.btn-pedir');
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'Enviando…';
+  btn.classList.add('carregando');
+  setTimeout(()=>{
+    btn.textContent = textoOriginal;
+    btn.classList.remove('carregando');
+    abrirFeedback();
+  }, 900);
+}
+
+let fbEstrela = 0;
+
+function mostrarConfirmado(){
+  document.getElementById('app-main').style.display='none';
+  document.getElementById('confirmado').classList.add('vis');
+  carrinho={};
+  renderCarrinho();
+  iniciarProgresso();
+}
+
+function abrirFeedback(){
+  fbEstrela = 0;
+  document.getElementById('fb-comentario').value = '';
+  document.getElementById('fb-enviar-btn').disabled = true;
+  document.querySelectorAll('.fb-star').forEach(s => s.classList.remove('sel'));
+  document.getElementById('fb-bg').classList.add('open');
+}
+
+function selecionarEstrela(n){
+  fbEstrela = n;
+  document.querySelectorAll('.fb-star').forEach((s,i) => s.classList.toggle('sel', i < n));
+  document.getElementById('fb-enviar-btn').disabled = false;
+}
+
+function pularFeedback(){
+  document.getElementById('fb-bg').classList.remove('open');
+  mostrarConfirmado();
+}
+
+function enviarFeedback(){
+  const estrelas = '★'.repeat(fbEstrela) + '☆'.repeat(5 - fbEstrela);
+  const comentario = document.getElementById('fb-comentario').value.trim();
+  const numMesa = new URLSearchParams(window.location.search).get('mesa') || '—';
+  let msg = `*Avaliação — Bistrô Designer*\nMesa: ${numMesa}\nNota: ${estrelas} (${fbEstrela}/5)`;
+  if(comentario) msg += `\nComentário: ${comentario}`;
+  window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
+  document.getElementById('fb-bg').classList.remove('open');
+  mostrarConfirmado();
+}
+
+function voltarMenu(){
+  if(progTimer){ clearInterval(progTimer); progTimer=null; }
+  document.getElementById('app-main').style.display='block';
+  document.getElementById('confirmado').classList.remove('vis');
+}
+
+function pagarConta(){
+  if(getTotal()===0){mostrarNotif('Adicione itens ao pedido primeiro!');return;}
+  document.getElementById('pagar-total').textContent = fmt(getTotal());
+  document.getElementById('pagar-bg').classList.add('open');
+}
+
+function fecharPagar(){
+  document.getElementById('pagar-bg').classList.remove('open');
+}
+
+function fecharConta(){
+  document.getElementById('fechaconta-bg').classList.add('open');
+  if(window.speechSynthesis){
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance('Obrigado pela sua visita ao Bistrô Designer! Foi um prazer servir você. Esperamos vê-lo em breve!');
+    u.lang='pt-BR'; u.rate=0.88; u.pitch=1.05; u.volume=1;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function fecharFechaConta(){
+  document.getElementById('fechaconta-bg').classList.remove('open');
+}
+
+renderNav();
+renderLista();
+</script>
+
+<div class="scroll-fabs" id="scroll-fabs">
+  <button class="scroll-fab-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Ir ao topo" aria-label="Ir ao topo">↑</button>
+  <button class="scroll-fab-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})" title="Ir ao final" aria-label="Ir ao final">↓</button>
+</div>
+<script>
+(function(){
+  var fabs=document.getElementById('scroll-fabs');
+  window.addEventListener('scroll',function(){fabs.classList.toggle('vis',window.scrollY>200);},{passive:true});
+})();
+</script>
+
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>
+  new window.VLibras.Widget('https://vlibras.gov.br/app');
+</script>
+</body>
+</html>
