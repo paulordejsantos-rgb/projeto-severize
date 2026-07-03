@@ -43,7 +43,14 @@ main{padding:14px 12px 130px;}
 .tag-semlactose{border-color:#5ba4cf;color:#5ba4cf;}
 .tag-vegano{border-color:#5cb85c;color:#5cb85c;}
 
-footer{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.97);padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid rgba(201,168,76,0.4);backdrop-filter:blur(10px);}
+.dock-fixo{position:fixed;bottom:0;left:0;right:0;z-index:120;}
+.acompanhar-bar{display:none;align-items:center;justify-content:center;gap:8px;padding:11px 16px;font-size:13px;font-weight:700;letter-spacing:0.01em;text-align:center;background:#C9A84C;color:#000;transition:background 0.4s ease,color 0.4s ease;}
+.acompanhar-bar.show{display:flex;}
+.acompanhar-bar.pronto{background:#2e9e4f;color:#fff;}
+.acompanhar-icon{font-size:16px;line-height:1;}
+body.hc .acompanhar-bar{background:#000;color:#fff;border-bottom:1px solid #C9A84C;}
+body.hc .acompanhar-bar.pronto{background:#000;color:#5cb85c;border-bottom-color:#5cb85c;}
+footer{background:rgba(0,0,0,0.97);padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid rgba(201,168,76,0.4);backdrop-filter:blur(10px);}
 .footer-info{display:flex;justify-content:space-between;align-items:baseline;}
 .footer-label{color:#555;font-size:10px;letter-spacing:0.04em;text-transform:uppercase;}
 .resumo{color:#C9A84C;font-size:18px;font-weight:700;line-height:1;}
@@ -374,19 +381,25 @@ body.hc .fb-enviar{background:#000;color:#fff;}
   <button class="btn-voltar" onclick="voltarMenu()">Adicionar mais itens</button>
 </div>
 
-<footer>
-  <div class="footer-info">
-    <span class="footer-label">Total do pedido</span>
-    <span class="resumo" id="resumo">R$ 0,00</span>
+<div class="dock-fixo">
+  <div class="acompanhar-bar" id="acompanhar-bar">
+    <span class="acompanhar-icon" id="acompanhar-icon">🕐</span>
+    <span id="acompanhar-texto">Preparando seu pedido</span>
   </div>
-  <div class="footer-actions">
-    <button class="btn-garcom" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
-    <button class="btn-pagar" onclick="pagarConta()">💰 Pagar Conta</button>
-    <button class="btn-dividir" onclick="abrirDividir()">✂ Dividir Conta</button>
-    <button class="btn-fechar-conta" onclick="fecharConta()">🏁 Fechar Conta</button>
-    <button class="btn-pedir" onclick="enviarPedido()">Enviar Pedido</button>
-  </div>
-</footer>
+  <footer>
+    <div class="footer-info">
+      <span class="footer-label">Total do pedido</span>
+      <span class="resumo" id="resumo">R$ 0,00</span>
+    </div>
+    <div class="footer-actions">
+      <button class="btn-garcom" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
+      <button class="btn-pagar" onclick="pagarConta()">💰 Pagar Conta</button>
+      <button class="btn-dividir" onclick="abrirDividir()">✂ Dividir Conta</button>
+      <button class="btn-fechar-conta" onclick="fecharConta()">🏁 Fechar Conta</button>
+      <button class="btn-pedir" onclick="enviarPedido()">Enviar Pedido</button>
+    </div>
+  </footer>
+</div>
 
 <div class="modal-bg" id="modal">
   <div class="modal">
@@ -730,6 +743,25 @@ function atualizarProgresso(){
   });
 }
 
+let acompanharTimer = null;
+
+function mostrarAcompanhar(){
+  if(acompanharTimer){ clearTimeout(acompanharTimer); acompanharTimer = null; }
+  const bar = document.getElementById('acompanhar-bar');
+  const icone = document.getElementById('acompanhar-icon');
+  const texto = document.getElementById('acompanhar-texto');
+  bar.classList.remove('pronto');
+  bar.classList.add('show');
+  icone.textContent = '🕐';
+  texto.textContent = 'Preparando seu pedido';
+  acompanharTimer = setTimeout(()=>{
+    bar.classList.add('pronto');
+    icone.textContent = '✅';
+    texto.textContent = 'Pedido pronto! A caminho da sua mesa';
+    acompanharTimer = null;
+  }, 12000);
+}
+
 function enviarPedido(){
   if(!Object.keys(carrinho).length){mostrarNotif('Adicione itens primeiro!');return;}
   const btn = document.querySelector('.btn-pedir');
@@ -739,6 +771,7 @@ function enviarPedido(){
   setTimeout(()=>{
     btn.textContent = textoOriginal;
     btn.classList.remove('carregando');
+    mostrarAcompanhar();
     abrirFeedback();
   }, 900);
 }
