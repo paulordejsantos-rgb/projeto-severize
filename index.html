@@ -15,6 +15,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#000000;min-height:100vh
 header{background:#000000;color:#C9A84C;padding:18px 16px 14px;text-align:center;position:sticky;top:40px;z-index:100;border-bottom:1px solid #C9A84C;}
 header h1{font-size:22px;font-weight:700;letter-spacing:0.06em;color:#C9A84C;}
 header p{font-size:12px;color:#C9A84C;margin-top:3px;}
+.voltar-link{display:inline-block;font-size:11px;color:#C9A84C;opacity:0.75;text-decoration:none;letter-spacing:0.03em;margin-bottom:8px;font-family:inherit;}
+.voltar-link:hover,.voltar-link:focus-visible{opacity:1;text-decoration:underline;}
+.voltar-link:focus-visible{outline:1px solid #C9A84C;outline-offset:2px;}
 
 nav{display:flex;gap:8px;padding:12px 14px;background:#0d0d0d;border-bottom:1px solid #2a2218;overflow-x:auto;position:sticky;top:102px;z-index:99;}
 nav::-webkit-scrollbar{display:none;}
@@ -162,6 +165,8 @@ body.hc .acess-btn.ativo{background:#000;color:#fff;border-color:#000;}
 body.hc header{background:#fff;border-bottom-color:#000;}
 body.hc header h1{color:#000;}
 body.hc header p{color:#333;}
+body.hc .voltar-link{color:#000;opacity:1;text-decoration:underline;}
+body.hc .voltar-link:focus-visible{outline-color:#000;}
 body.hc nav,body.hc .filtros-row{background:#f0f0f0;border-color:#ddd;}
 body.hc .cat-btn{color:#333;border-color:#aaa;}
 body.hc .cat-btn.ativo{background:#000;color:#fff;border-color:#000;}
@@ -309,6 +314,7 @@ body.hc .fb-enviar{background:#000;color:#fff;}
 </div>
 
 <header>
+  <a class="voltar-link" href="https://acasaedesigner.com">← Voltar para A Casa &amp; Designer</a>
   <h1>Bistrô Designer</h1>
   <p id="mesa-label">Bem-vindo! Faça seu pedido</p>
 </header>
