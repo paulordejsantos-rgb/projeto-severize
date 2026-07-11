@@ -287,6 +287,7 @@ body.font-sm .modal-preco{font-size:19px;}
 .fb-puxador{width:40px;height:4px;background:#2a2a2a;border-radius:2px;margin:0 auto 18px;}
 .fb-titulo{font-size:16px;font-weight:700;color:#C9A84C;letter-spacing:0.04em;margin-bottom:4px;}
 .fb-sub{font-size:12px;color:#555;margin-bottom:20px;}
+.fb-label{font-size:12px;color:#999;margin-bottom:8px;text-align:center;}
 .fb-stars{display:flex;justify-content:center;gap:12px;margin-bottom:20px;}
 .fb-star{font-size:36px;cursor:pointer;color:#C9A84C;opacity:0.25;transition:opacity 0.15s,transform 0.1s;user-select:none;}
 .fb-star.sel{opacity:1;}
@@ -300,6 +301,7 @@ body.font-sm .modal-preco{font-size:19px;}
 body.hc .fb-panel{background:#fff;border-top-color:#000;}
 body.hc .fb-titulo{color:#000;}
 body.hc .fb-star{color:#000;}
+body.hc .fb-label{color:#333;}
 body.hc .fb-textarea{background:#fff;color:#000;border-color:#999;}
 body.hc .fb-enviar{background:#000;color:#fff;}
 </style>
@@ -498,14 +500,26 @@ body.hc .fb-enviar{background:#000;color:#fff;}
     <div class="fb-puxador"></div>
     <div class="fb-titulo">Como foi sua experiência?</div>
     <div class="fb-sub">Sua opinião nos ajuda a melhorar</div>
+
+    <div class="fb-label">Atendimento tradicional (sem cardápio digital)</div>
     <div class="fb-stars">
-      <span class="fb-star" onclick="selecionarEstrela(1)">★</span>
-      <span class="fb-star" onclick="selecionarEstrela(2)">★</span>
-      <span class="fb-star" onclick="selecionarEstrela(3)">★</span>
-      <span class="fb-star" onclick="selecionarEstrela(4)">★</span>
-      <span class="fb-star" onclick="selecionarEstrela(5)">★</span>
+      <span class="fb-star fb-star-trad" onclick="selecionarEstrelaTradicional(1)">★</span>
+      <span class="fb-star fb-star-trad" onclick="selecionarEstrelaTradicional(2)">★</span>
+      <span class="fb-star fb-star-trad" onclick="selecionarEstrelaTradicional(3)">★</span>
+      <span class="fb-star fb-star-trad" onclick="selecionarEstrelaTradicional(4)">★</span>
+      <span class="fb-star fb-star-trad" onclick="selecionarEstrelaTradicional(5)">★</span>
     </div>
-    <textarea class="fb-textarea" id="fb-comentario" placeholder="Comentário opcional..."></textarea>
+
+    <div class="fb-label">Experiência com este cardápio digital</div>
+    <div class="fb-stars">
+      <span class="fb-star fb-star-dig" onclick="selecionarEstrelaDigital(1)">★</span>
+      <span class="fb-star fb-star-dig" onclick="selecionarEstrelaDigital(2)">★</span>
+      <span class="fb-star fb-star-dig" onclick="selecionarEstrelaDigital(3)">★</span>
+      <span class="fb-star fb-star-dig" onclick="selecionarEstrelaDigital(4)">★</span>
+      <span class="fb-star fb-star-dig" onclick="selecionarEstrelaDigital(5)">★</span>
+    </div>
+
+    <textarea class="fb-textarea" id="fb-comentario" placeholder="Sugestão de melhoria para este cardápio digital (opcional)..."></textarea>
     <div class="fb-btns">
       <button class="fb-skip" onclick="pularFeedback()">Pular</button>
       <button class="fb-enviar" id="fb-enviar-btn" onclick="enviarFeedback()" disabled>Enviar Avaliação</button>
@@ -782,7 +796,8 @@ function enviarPedido(){
   }, 900);
 }
 
-let fbEstrela = 0;
+let fbEstrelaTradicional = 0;
+let fbEstrelaDigital = 0;
 
 function mostrarConfirmado(){
   document.getElementById('app-main').style.display='none';
@@ -792,18 +807,29 @@ function mostrarConfirmado(){
   iniciarProgresso();
 }
 
+function atualizarBotaoFeedback(){
+  document.getElementById('fb-enviar-btn').disabled = !(fbEstrelaTradicional > 0 && fbEstrelaDigital > 0);
+}
+
 function abrirFeedback(){
-  fbEstrela = 0;
+  fbEstrelaTradicional = 0;
+  fbEstrelaDigital = 0;
   document.getElementById('fb-comentario').value = '';
   document.getElementById('fb-enviar-btn').disabled = true;
   document.querySelectorAll('.fb-star').forEach(s => s.classList.remove('sel'));
   document.getElementById('fb-bg').classList.add('open');
 }
 
-function selecionarEstrela(n){
-  fbEstrela = n;
-  document.querySelectorAll('.fb-star').forEach((s,i) => s.classList.toggle('sel', i < n));
-  document.getElementById('fb-enviar-btn').disabled = false;
+function selecionarEstrelaTradicional(n){
+  fbEstrelaTradicional = n;
+  document.querySelectorAll('.fb-star-trad').forEach((s,i) => s.classList.toggle('sel', i < n));
+  atualizarBotaoFeedback();
+}
+
+function selecionarEstrelaDigital(n){
+  fbEstrelaDigital = n;
+  document.querySelectorAll('.fb-star-dig').forEach((s,i) => s.classList.toggle('sel', i < n));
+  atualizarBotaoFeedback();
 }
 
 function pularFeedback(){
@@ -812,11 +838,12 @@ function pularFeedback(){
 }
 
 function enviarFeedback(){
-  const estrelas = '★'.repeat(fbEstrela) + '☆'.repeat(5 - fbEstrela);
+  const estrelasTrad = '★'.repeat(fbEstrelaTradicional) + '☆'.repeat(5 - fbEstrelaTradicional);
+  const estrelasDigital = '★'.repeat(fbEstrelaDigital) + '☆'.repeat(5 - fbEstrelaDigital);
   const comentario = document.getElementById('fb-comentario').value.trim();
   const numMesa = new URLSearchParams(window.location.search).get('mesa') || '—';
-  let msg = `*Avaliação — Bistrô Designer*\nMesa: ${numMesa}\nNota: ${estrelas} (${fbEstrela}/5)`;
-  if(comentario) msg += `\nComentário: ${comentario}`;
+  let msg = `*Avaliação — Bistrô Designer*\nMesa: ${numMesa}\nAtendimento tradicional (sem cardápio digital): ${estrelasTrad} (${fbEstrelaTradicional}/5)\nExperiência com o cardápio digital: ${estrelasDigital} (${fbEstrelaDigital}/5)`;
+  if(comentario) msg += `\nSugestão de melhoria: ${comentario}`;
   window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
   document.getElementById('fb-bg').classList.remove('open');
   mostrarConfirmado();
