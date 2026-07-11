@@ -401,6 +401,7 @@ body.hc .fb-enviar{background:#000;color:#fff;}
     </div>
     <div class="footer-actions">
       <button class="btn-garcom" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
+      <button class="btn-garcom" onclick="abrirAvaliacaoEstabelecimento()">⭐ Avaliar Estabelecimento</button>
       <button class="btn-pedir" onclick="enviarPedido()">Enviar Pedido</button>
       <button class="btn-fechar-conta" onclick="fecharConta()">🏁 Fechar Conta</button>
       <button class="btn-dividir" onclick="abrirDividir()">✂ Dividir Conta</button>
@@ -523,6 +524,26 @@ body.hc .fb-enviar{background:#000;color:#fff;}
     <div class="fb-btns">
       <button class="fb-skip" onclick="pularFeedback()">Pular</button>
       <button class="fb-enviar" id="fb-enviar-btn" onclick="enviarFeedback()" disabled>Enviar Avaliação</button>
+    </div>
+  </div>
+</div>
+
+<div class="fb-bg" id="est-bg">
+  <div class="fb-panel">
+    <div class="fb-puxador"></div>
+    <div class="fb-titulo">Avalie o Estabelecimento</div>
+    <div class="fb-sub">Como foi sua experiência geral aqui?</div>
+    <div class="fb-stars">
+      <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(1)">★</span>
+      <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(2)">★</span>
+      <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(3)">★</span>
+      <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(4)">★</span>
+      <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(5)">★</span>
+    </div>
+    <textarea class="fb-textarea" id="est-comentario" placeholder="Sugestão de melhoria para o estabelecimento (opcional)..."></textarea>
+    <div class="fb-btns">
+      <button class="fb-skip" onclick="fecharAvaliacaoEstabelecimento()">Cancelar</button>
+      <button class="fb-enviar" id="est-enviar-btn" onclick="enviarAvaliacaoEstabelecimento()" disabled>Enviar Avaliação</button>
     </div>
   </div>
 </div>
@@ -798,6 +819,27 @@ function enviarPedido(){
 
 let fbEstrelaTradicional = 0;
 let fbEstrelaDigital = 0;
+let estEstrela = 0;
+
+const SUPABASE_URL = 'https://chwxepwdsyspcdkalaic.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNod3hlcHdkc3lzcGNka2FsYWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NjUxOTksImV4cCI6MjA5MjA0MTE5OX0.sCcGeN9AxTBTNDMlOia2JPJR-HRxo2vQDHB6ojhbXWk';
+
+async function enviarAvaliacaoSupabase(payload){
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/avaliacoes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.error('Erro ao salvar avaliação no Supabase:', e);
+  }
+}
 
 function mostrarConfirmado(){
   document.getElementById('app-main').style.display='none';
@@ -845,8 +887,51 @@ function enviarFeedback(){
   let msg = `*Avaliação — Bistrô Designer*\nMesa: ${numMesa}\nAtendimento tradicional (sem cardápio digital): ${estrelasTrad} (${fbEstrelaTradicional}/5)\nExperiência com o cardápio digital: ${estrelasDigital} (${fbEstrelaDigital}/5)`;
   if(comentario) msg += `\nSugestão de melhoria: ${comentario}`;
   window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
+  enviarAvaliacaoSupabase({
+    restaurante: 'Bistrô Designer',
+    tipo: 'cardapio_digital',
+    mesa: numMesa,
+    nota_tradicional: fbEstrelaTradicional,
+    nota_digital: fbEstrelaDigital,
+    sugestao: comentario || undefined,
+  });
   document.getElementById('fb-bg').classList.remove('open');
   mostrarConfirmado();
+}
+
+function abrirAvaliacaoEstabelecimento(){
+  estEstrela = 0;
+  document.getElementById('est-comentario').value = '';
+  document.getElementById('est-enviar-btn').disabled = true;
+  document.querySelectorAll('.fb-star-est').forEach(s => s.classList.remove('sel'));
+  document.getElementById('est-bg').classList.add('open');
+}
+
+function fecharAvaliacaoEstabelecimento(){
+  document.getElementById('est-bg').classList.remove('open');
+}
+
+function selecionarEstrelaEstabelecimento(n){
+  estEstrela = n;
+  document.querySelectorAll('.fb-star-est').forEach((s,i) => s.classList.toggle('sel', i < n));
+  document.getElementById('est-enviar-btn').disabled = false;
+}
+
+function enviarAvaliacaoEstabelecimento(){
+  const estrelas = '★'.repeat(estEstrela) + '☆'.repeat(5 - estEstrela);
+  const comentario = document.getElementById('est-comentario').value.trim();
+  const numMesa = new URLSearchParams(window.location.search).get('mesa') || '—';
+  let msg = `*Avaliação do Estabelecimento — Bistrô Designer*\nMesa: ${numMesa}\nNota: ${estrelas} (${estEstrela}/5)`;
+  if(comentario) msg += `\nSugestão de melhoria: ${comentario}`;
+  window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
+  enviarAvaliacaoSupabase({
+    restaurante: 'Bistrô Designer',
+    tipo: 'estabelecimento',
+    mesa: numMesa,
+    nota_estabelecimento: estEstrela,
+    sugestao: comentario || undefined,
+  });
+  document.getElementById('est-bg').classList.remove('open');
 }
 
 function voltarMenu(){
