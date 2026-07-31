@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bistrô Designer — Cardápio Digital</title>
+<title>Bistrô Elegante — Cardápio Digital</title>
 <link rel="icon" type="image/png" href="public/brasao.png">
 <link rel="preload" as="image" href="moqueca-peixe.webp" type="image/webp">
 <link rel="preload" as="image" href="picanha-brasa.webp" type="image/webp">
@@ -317,7 +317,7 @@ body.hc .fb-enviar{background:#000;color:#fff;}
 
 <header>
   <a class="voltar-link" href="https://acasaedesigner.com">← Voltar para A Casa &amp; Designer</a>
-  <h1>Bistrô Designer</h1>
+  <h1>Bistrô Elegante</h1>
   <p id="mesa-label">Bem-vindo! Faça seu pedido</p>
 </header>
 
@@ -492,7 +492,7 @@ body.hc .fb-enviar{background:#000;color:#fff;}
     <div class="div-puxador"></div>
     <div class="fechaconta-estrelas">✨</div>
     <div class="fechaconta-titulo">Obrigado pela sua visita!</div>
-    <div class="fechaconta-marca">🍽️ Bistrô Designer</div>
+    <div class="fechaconta-marca">🍽️ Bistrô Elegante</div>
     <div class="fechaconta-msg">Foi um prazer servir você.<br>Esperamos vê-lo em breve!</div>
     <button class="fechaconta-fechar" onclick="fecharFechaConta()">Fechar</button>
   </div>
@@ -574,7 +574,7 @@ function renderDestaques(sugestaoTexto, favorito){
 }
 
 (function carregarDestaques(){
-  fetch('https://chwxepwdsyspcdkalaic.supabase.co/rest/v1/sugestao_dia?restaurante=eq.Bistr%C3%B4%20Designer&select=texto', {
+  fetch('https://chwxepwdsyspcdkalaic.supabase.co/rest/v1/sugestao_dia?restaurante=eq.Bistr%C3%B4%20Elegante&select=texto', {
     headers: {
       apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNod3hlcHdkc3lzcGNka2FsYWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NjUxOTksImV4cCI6MjA5MjA0MTE5OX0.sCcGeN9AxTBTNDMlOia2JPJR-HRxo2vQDHB6ojhbXWk',
       Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNod3hlcHdkc3lzcGNka2FsYWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NjUxOTksImV4cCI6MjA5MjA0MTE5OX0.sCcGeN9AxTBTNDMlOia2JPJR-HRxo2vQDHB6ojhbXWk',
@@ -932,11 +932,11 @@ function enviarFeedback(){
   const estrelasDigital = '★'.repeat(fbEstrelaDigital) + '☆'.repeat(5 - fbEstrelaDigital);
   const comentario = document.getElementById('fb-comentario').value.trim();
   const numMesa = new URLSearchParams(window.location.search).get('mesa') || '—';
-  let msg = `*Avaliação — Bistrô Designer*\nMesa: ${numMesa}\nAtendimento tradicional (sem cardápio digital): ${estrelasTrad} (${fbEstrelaTradicional}/5)\nExperiência com o cardápio digital: ${estrelasDigital} (${fbEstrelaDigital}/5)`;
+  let msg = `*Avaliação — Bistrô Elegante*\nMesa: ${numMesa}\nAtendimento tradicional (sem cardápio digital): ${estrelasTrad} (${fbEstrelaTradicional}/5)\nExperiência com o cardápio digital: ${estrelasDigital} (${fbEstrelaDigital}/5)`;
   if(comentario) msg += `\nSugestão de melhoria: ${comentario}`;
   window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
   enviarAvaliacaoSupabase({
-    restaurante: 'Bistrô Designer',
+    restaurante: 'Bistrô Elegante',
     tipo: 'cardapio_digital',
     mesa: numMesa,
     nota_tradicional: fbEstrelaTradicional,
@@ -969,11 +969,11 @@ function enviarAvaliacaoEstabelecimento(){
   const estrelas = '★'.repeat(estEstrela) + '☆'.repeat(5 - estEstrela);
   const comentario = document.getElementById('est-comentario').value.trim();
   const numMesa = new URLSearchParams(window.location.search).get('mesa') || '—';
-  let msg = `*Avaliação do Estabelecimento — Bistrô Designer*\nMesa: ${numMesa}\nNota: ${estrelas} (${estEstrela}/5)`;
+  let msg = `*Avaliação do Estabelecimento — Bistrô Elegante*\nMesa: ${numMesa}\nNota: ${estrelas} (${estEstrela}/5)`;
   if(comentario) msg += `\nSugestão de melhoria: ${comentario}`;
   window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
   enviarAvaliacaoSupabase({
-    restaurante: 'Bistrô Designer',
+    restaurante: 'Bistrô Elegante',
     tipo: 'estabelecimento',
     mesa: numMesa,
     nota_estabelecimento: estEstrela,
@@ -1002,7 +1002,7 @@ function fecharConta(){
   document.getElementById('fechaconta-bg').classList.add('open');
   if(window.speechSynthesis){
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance('Obrigado pela sua visita ao Bistrô Designer! Foi um prazer servir você. Esperamos vê-lo em breve!');
+    const u = new SpeechSynthesisUtterance('Obrigado pela sua visita ao Bistrô Elegante! Foi um prazer servir você. Esperamos vê-lo em breve!');
     u.lang='pt-BR'; u.rate=0.88; u.pitch=1.05; u.volume=1;
     window.speechSynthesis.speak(u);
   }
