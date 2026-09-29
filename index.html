@@ -403,7 +403,7 @@ body.hc .fb-enviar{background:#000;color:#fff;}
     </div>
     <div class="footer-actions">
       <button class="btn-garcom" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
-      <button class="btn-garcom" onclick="abrirAvaliacaoEstabelecimento()">⭐ Avaliar Estabelecimento</button>
+      <button class="btn-garcom" onclick="abrirAvaliacaoEstabelecimento()">⭐ Avaliar</button>
       <button class="btn-pedir" onclick="enviarPedido()">Enviar Pedido</button>
       <button class="btn-fechar-conta" onclick="fecharConta()">🏁 Fechar Conta</button>
       <button class="btn-dividir" onclick="abrirDividir()">✂ Dividir Conta</button>
@@ -533,8 +533,10 @@ body.hc .fb-enviar{background:#000;color:#fff;}
 <div class="fb-bg" id="est-bg">
   <div class="fb-panel">
     <div class="fb-puxador"></div>
-    <div class="fb-titulo">Avalie o Estabelecimento</div>
-    <div class="fb-sub">Como foi sua experiência geral aqui?</div>
+    <div class="fb-titulo">Avalie sua experiência</div>
+    <div class="fb-sub">Sua opinião nos ajuda a melhorar</div>
+
+    <div class="fb-label">Ambiente / Estabelecimento</div>
     <div class="fb-stars">
       <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(1)">★</span>
       <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(2)">★</span>
@@ -542,7 +544,17 @@ body.hc .fb-enviar{background:#000;color:#fff;}
       <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(4)">★</span>
       <span class="fb-star fb-star-est" onclick="selecionarEstrelaEstabelecimento(5)">★</span>
     </div>
-    <textarea class="fb-textarea" id="est-comentario" placeholder="Sugestão de melhoria para o estabelecimento (opcional)..."></textarea>
+
+    <div class="fb-label">Cardápio digital</div>
+    <div class="fb-stars">
+      <span class="fb-star fb-star-est-dig" onclick="selecionarEstrelaEstabelecimentoDigital(1)">★</span>
+      <span class="fb-star fb-star-est-dig" onclick="selecionarEstrelaEstabelecimentoDigital(2)">★</span>
+      <span class="fb-star fb-star-est-dig" onclick="selecionarEstrelaEstabelecimentoDigital(3)">★</span>
+      <span class="fb-star fb-star-est-dig" onclick="selecionarEstrelaEstabelecimentoDigital(4)">★</span>
+      <span class="fb-star fb-star-est-dig" onclick="selecionarEstrelaEstabelecimentoDigital(5)">★</span>
+    </div>
+
+    <textarea class="fb-textarea" id="est-comentario" placeholder="Sugestão de melhoria (opcional)..."></textarea>
     <div class="fb-btns">
       <button class="fb-skip" onclick="fecharAvaliacaoEstabelecimento()">Cancelar</button>
       <button class="fb-enviar" id="est-enviar-btn" onclick="enviarAvaliacaoEstabelecimento()" disabled>Enviar Avaliação</button>
@@ -868,6 +880,7 @@ function enviarPedido(){
 let fbEstrelaTradicional = 0;
 let fbEstrelaDigital = 0;
 let estEstrela = 0;
+let estEstrelaDigital = 0;
 
 const SUPABASE_URL = 'https://chwxepwdsyspcdkalaic.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNod3hlcHdkc3lzcGNka2FsYWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NjUxOTksImV4cCI6MjA5MjA0MTE5OX0.sCcGeN9AxTBTNDMlOia2JPJR-HRxo2vQDHB6ojhbXWk';
@@ -949,9 +962,10 @@ function enviarFeedback(){
 
 function abrirAvaliacaoEstabelecimento(){
   estEstrela = 0;
+  estEstrelaDigital = 0;
   document.getElementById('est-comentario').value = '';
   document.getElementById('est-enviar-btn').disabled = true;
-  document.querySelectorAll('.fb-star-est').forEach(s => s.classList.remove('sel'));
+  document.querySelectorAll('.fb-star-est, .fb-star-est-dig').forEach(s => s.classList.remove('sel'));
   document.getElementById('est-bg').classList.add('open');
 }
 
@@ -959,24 +973,36 @@ function fecharAvaliacaoEstabelecimento(){
   document.getElementById('est-bg').classList.remove('open');
 }
 
+function atualizarBotaoEstabelecimento(){
+  document.getElementById('est-enviar-btn').disabled = !(estEstrela > 0 && estEstrelaDigital > 0);
+}
+
 function selecionarEstrelaEstabelecimento(n){
   estEstrela = n;
   document.querySelectorAll('.fb-star-est').forEach((s,i) => s.classList.toggle('sel', i < n));
-  document.getElementById('est-enviar-btn').disabled = false;
+  atualizarBotaoEstabelecimento();
+}
+
+function selecionarEstrelaEstabelecimentoDigital(n){
+  estEstrelaDigital = n;
+  document.querySelectorAll('.fb-star-est-dig').forEach((s,i) => s.classList.toggle('sel', i < n));
+  atualizarBotaoEstabelecimento();
 }
 
 function enviarAvaliacaoEstabelecimento(){
-  const estrelas = '★'.repeat(estEstrela) + '☆'.repeat(5 - estEstrela);
+  const estsTrad = '★'.repeat(estEstrela) + '☆'.repeat(5 - estEstrela);
+  const estsDigital = '★'.repeat(estEstrelaDigital) + '☆'.repeat(5 - estEstrelaDigital);
   const comentario = document.getElementById('est-comentario').value.trim();
   const numMesa = new URLSearchParams(window.location.search).get('mesa') || '—';
-  let msg = `*Avaliação do Estabelecimento — Bistrô Elegante*\nMesa: ${numMesa}\nNota: ${estrelas} (${estEstrela}/5)`;
+  let msg = `*Avaliação — Bistrô Elegante*\nMesa: ${numMesa}\nAmbiente / Estabelecimento: ${estsTrad} (${estEstrela}/5)\nCardápio digital: ${estsDigital} (${estEstrelaDigital}/5)`;
   if(comentario) msg += `\nSugestão de melhoria: ${comentario}`;
   window.open('https://wa.me/5521990980965?text=' + encodeURIComponent(msg), '_blank');
   enviarAvaliacaoSupabase({
     restaurante: 'Bistrô Elegante',
-    tipo: 'estabelecimento',
+    tipo: 'cardapio_digital',
     mesa: numMesa,
-    nota_estabelecimento: estEstrela,
+    nota_tradicional: estEstrela,
+    nota_digital: estEstrelaDigital,
     sugestao: comentario || undefined,
   });
   document.getElementById('est-bg').classList.remove('open');
